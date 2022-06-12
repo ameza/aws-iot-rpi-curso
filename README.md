@@ -2,7 +2,7 @@
 Elaborado por: Andrés Meza 
 ## Material del Curso
 
-##Instalación
+### Instalación
 
 - Instalar Node JS 14.17.2 o superior
 - ``sudo apt-get install cmake``
@@ -18,7 +18,7 @@ Elaborado por: Andrés Meza
  ENDPOINT='aaaaaa-ats.iot.us-east-1.amazonaws.com'
 ```
 
-##Ejecución
+### Ejecución
 
 - ``npm run start``
 

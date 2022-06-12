@@ -41,7 +41,7 @@ const buildMQQTConnection = (options: any) => {
         config_builder.with_certificate_authority_from_path(undefined, options.ca_file);
     }
 
-    config_builder.with_clean_session(false);
+    config_builder.with_clean_session(true);
     config_builder.with_client_id(options.client_id || "test-" + Math.floor(Math.random() * 100000000));
     config_builder.with_endpoint(options.endpoint);
     const config = config_builder.build();

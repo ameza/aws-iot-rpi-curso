@@ -11,6 +11,8 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
         try {
             let published = false;
             let subscribed = false;
+            let published_counts = 0;
+
 
             const on_publish = async (topic: string, payload: ArrayBuffer, dup: boolean, qos: mqtt.QoS, retain: boolean) => {
                 const json = decoder.decode(payload);
@@ -26,6 +28,31 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
             }
 
             await connection.subscribe(options.topic, mqtt.QoS.AtLeastOnce, on_publish);
+
+            // publicamos la cantidad de mensajes indicada en las configuraciones
+            for (let seq = 0; seq < options.count; ++seq) {
+                const publish = async () => {
+                    const msg = {
+                        message: options.message,
+                        sequence: seq + 1,
+                    };
+                    const json = JSON.stringify(msg);
+
+                    // Publicamos el mensaje y aumentamos el contador de secuencia
+                    connection.publish(options.topic, json, mqtt.QoS.AtLeastOnce).then(() => {
+                        console.log('Mensaje publicado');
+                        console.log(msg);
+                        ++published_counts;
+                        if (published_counts == options.count) {
+                            published = true;
+                            if (published) {
+                                resolve();
+                            }
+                        }
+                    }).catch(err => console.log(err));
+                }
+                setTimeout(publish, seq * 1000);
+            }
         }
         catch (error) {
             reject(error);

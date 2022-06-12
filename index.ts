@@ -2,6 +2,7 @@ import dotenv from "dotenv"
 import { mqtt } from 'aws-iot-device-sdk-v2';
 import * as awscrt from "aws-crt";
 
+const decoder = new TextDecoder('utf8');
 const iot_lib = awscrt.iot;
 const mqtt_lib = awscrt.mqtt;
 
@@ -9,31 +10,22 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
     return new Promise<void>(async (resolve, reject) => {
         try {
             let published = false;
-            let published_counts = 0;
-            // publicamos la cantidad de mensajes indicada en las configuraciones
-            for (let seq = 0; seq < options.count; ++seq) {
-                const publish = async () => {
-                    const msg = {
-                        message: options.message,
-                        sequence: seq + 1,
-                    };
-                    const json = JSON.stringify(msg);
+            let subscribed = false;
 
-                    // Publicamos el mensaje y aumentamos el contador de secuencia
-                    connection.publish(options.topic, json, mqtt.QoS.AtLeastOnce).then(() => {
-                        console.log('Mensaje publicado');
-                        console.log(msg);
-                        ++published_counts;
-                        if (published_counts == options.count) {
-                            published = true;
-                            if (published) {
-                                resolve();
-                            }
-                        }
-                    }).catch(err => console.log(err));
+            const on_publish = async (topic: string, payload: ArrayBuffer, dup: boolean, qos: mqtt.QoS, retain: boolean) => {
+                const json = decoder.decode(payload);
+                console.log(`Mensaje recibido. topic:"${topic}" dup:${dup} qos:${qos} retain:${retain}`);
+                console.log(json);
+                const message = JSON.parse(json);
+                if (message.sequence == options.count) {
+                    subscribed = true;
+                    if (subscribed && published) {
+                        resolve();
+                    }
                 }
-                setTimeout(publish, seq * 1000);
             }
+
+            await connection.subscribe(options.topic, mqtt.QoS.AtLeastOnce, on_publish);
         }
         catch (error) {
             reject(error);

@@ -9,7 +9,6 @@ const mqtt_lib = awscrt.mqtt;
 async function execute_session(connection: mqtt.MqttClientConnection, options: any) {
     return new Promise<void>(async (resolve, reject) => {
         try {
-            let published = false;
             let subscribed = false;
 
             const on_publish = async (topic: string, payload: ArrayBuffer, dup: boolean, qos: mqtt.QoS, retain: boolean) => {
@@ -19,7 +18,7 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
                 const message = JSON.parse(json);
                 if (message.sequence == options.count) {
                     subscribed = true;
-                    if (subscribed && published) {
+                    if (subscribed) {
                         resolve();
                     }
                 }

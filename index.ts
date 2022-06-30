@@ -24,6 +24,7 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
                 }
             }
 
+            // nos suscribimos al topic y ejecutamos on_publish por cada mensaje
             await connection.subscribe(options.topic, mqtt.QoS.AtLeastOnce, on_publish);
         }
         catch (error) {

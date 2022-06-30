@@ -45,7 +45,7 @@ async function execute_session(connection: mqtt.MqttClientConnection, options: a
                         ++published_counts;
                         if (published_counts == options.count) {
                             published = true;
-                            if (published) {
+                            if (subscribed && published) {
                                 resolve();
                             }
                         }
